@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
         cout << "Bad usage: Read in output file in same line" << endl;
         exit(1);
     }
+
     else {
         outfilename = argv[1];
         ofile.open(outfilename, ios_base::app);

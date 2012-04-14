@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="80">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df name="QVMC2" root=".">
+      <in>ExpFactor.cpp</in>
+      <in>ExpFactor.h</in>
+      <in>Hamiltonian.cpp</in>
+      <in>Hamiltonian.h</in>
+      <in>Hermite.cpp</in>
+      <in>Hermite.h</in>
+      <in>Integration.cpp</in>
+      <in>Jastrow.cpp</in>
+      <in>Jastrow.h</in>
+      <in>QForce.cpp</in>
+      <in>QForce.h</in>
+      <in>Radial.cpp</in>
+      <in>Radial.h</in>
+      <in>Slater.cpp</in>
+      <in>Slater.h</in>
+      <in>Wavefunction.cpp</in>
+      <in>Wavefunction.h</in>
+      <in>blocking.cpp</in>
+      <in>blocking_analyze.cpp</in>
+      <in>dfp.cpp</in>
+      <in>ini.cpp</in>
+      <in>ini.h</in>
+      <in>lib.cpp</in>
+      <in>lib.h</in>
+      <in>main.cpp</in>
+      <in>normal.cpp</in>
+      <in>normal.hpp</in>
+      <in>qvmc.cpp</in>
+      <in>qvmc.h</in>
+      <in>ziggurat.cpp</in>
+      <in>ziggurat.hpp</in>
+      <in>zignor.c</in>
+      <in>zignor.h</in>
+      <in>zigrandom.c</in>
+      <in>zigrandom.h</in>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+        </makeTool>
+      </makefileType>
+      <item path="Integration.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="blocking.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="blocking_analyze.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="dfp.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/mpich2</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="normal.cpp" ex="true" tool="1" flavor="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
