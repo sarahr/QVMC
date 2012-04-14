@@ -8,7 +8,6 @@
 #ifndef QVMC_H
 #define	QVMC_H 
 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 #include "Radial.h"
 #include "Hermite.h"
 #include "Jastrow.h"
@@ -18,8 +17,8 @@
 #include "Hamiltonian.h"
 #include "QForce.h"
 
-
-#include <armadillo> // einstein
+//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+#include <armadillo> 
 
 using namespace std;
 using namespace arma;

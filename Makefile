@@ -7,7 +7,7 @@ all: main
 #all: Integration
 
 main: main.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o  QForce.o  ExpFactor.o zigrandom.o zignor.o ziggurat.o ini.o
-	#mpicxx -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
+	#mpicxx -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
 	mpicxx -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o -larmadillo -lblas -llapack
 
 dfp: dfp.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o  zigrandom.o zignor.o ziggurat.o  ini.o 

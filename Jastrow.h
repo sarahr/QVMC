@@ -9,6 +9,7 @@
 #define	JASTROW_H
 
 #include <armadillo> 
+//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;

@@ -3,7 +3,7 @@
  * Author: sarahrei
  *  
  * Created on 19. januar 2012, 12:13
- */   
+ */
 #include <mpi.h>
 #include <cstdlib>
 #include <iomanip>
@@ -13,11 +13,11 @@
 #include "ini.h"
 
 
-using namespace std; 
+using namespace std;
 using namespace arma;
 
 #define DISTANCE false// set "true" if mean distance between two particles
-                      // is to be computed
+// is to be computed
 
 
 /////////////////////////////////////////////////////////////////////////       
@@ -33,9 +33,7 @@ int main(int argc, char* argv[]) {
     if (argc <= 1) {
         cout << "Bad usage: Read in output file in same line" << endl;
         exit(1);
-    }
-
-    else {
+    } else {
         outfilename = argv[1];
         ofile.open(outfilename, ios_base::app);
 
@@ -57,8 +55,8 @@ int main(int argc, char* argv[]) {
         int numpart, dim;
         double omega, step;
         double a_start, a_steps, a_delta, b_start, b_steps, b_delta;
-        double elapsed_time;      
-        
+        double elapsed_time;
+
         long idum = -myrank - 1; // Seed for random number generator
         int seed = myrank + 12;
         double del_max = 3.0; // Parameters to determine the optimal value
@@ -80,7 +78,7 @@ int main(int argc, char* argv[]) {
         dim = INIreader.GetInt("main", "dim");
         omega = INIreader.GetDouble("main", "omega");
         step = INIreader.GetDouble("main", "step");
-        
+
         a_start = INIreader.GetDouble("main", "a_start");
         b_start = INIreader.GetDouble("main", "b_start");
         a_steps = INIreader.GetDouble("main", "a_steps");
@@ -94,10 +92,10 @@ int main(int argc, char* argv[]) {
         jastrow = INIreader.GetInt("main", "jastrow");
 
         elapsed_time = -MPI_Wtime();
-        
+
         // Initializations
-        Slater Slat(numpart, omega, dim);       
-        ExpFactor ExpFa(numpart, omega); 
+        Slater Slat(numpart, omega, dim);
+        ExpFactor ExpFa(numpart, omega);
         Jastrow Jast(numpart, dim);
         Radial Pos(numpart, dim);
         Radial Pos_tr(numpart, dim);
@@ -109,13 +107,13 @@ int main(int argc, char* argv[]) {
         QForce QF(&Trial);
         Metropolis VMC_brute(&Trial, &Hamilt1, idum);
         Metropolis_Hastings VMC_imp(&Trial, &Hamilt1, seed, &QF, idum);
-        
+
         for (int i = 0; i < a_steps; i++) { // Loop over alpha
             for (int j = 0; j < b_steps; j++) { // Loop over beta
-                
+
                 alpha = a_start + i*a_delta;
                 beta = b_start + j*b_delta;
-                
+
                 //Initialize local variables
                 local_sum = 0;
                 local_squaresum = 0;
@@ -128,12 +126,12 @@ int main(int argc, char* argv[]) {
                     VMC_brute.delta_opt(N_delta, alpha, beta, del_min, del_max, eps);
                     VMC_brute.run_algo(N, N_therm, alpha, beta);
                     local_sum = VMC_brute.get_E();
-                    local_squaresum = VMC_brute.get_Esq();  
+                    local_squaresum = VMC_brute.get_Esq();
 #if DISTANCE
                     local_r = VMC_brute.get_rdist();
                     local_rsq = VMC_brute.get_rdistsq();
 #endif
-                    
+
                 } else {
                     VMC_imp.set_delt(step);
                     VMC_imp.run_algo(N, N_therm, alpha, beta);
@@ -150,13 +148,13 @@ int main(int argc, char* argv[]) {
                 MPI_Reduce(&local_squaresum, &total_sq, 1, MPI_DOUBLE, MPI_SUM, 0,
                         MPI_COMM_WORLD);
 #if DISTANCE               
-                MPI_Reduce(&local_r, &total_r, 1,MPI_DOUBLE,MPI_SUM, 0, MPI_COMM_WORLD);  
-                MPI_Reduce(&local_rsq, &total_rsq, 1,MPI_DOUBLE,MPI_SUM, 0, MPI_COMM_WORLD); 
+                MPI_Reduce(&local_r, &total_r, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+                MPI_Reduce(&local_rsq, &total_rsq, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 #endif                
 
                 // Compute final values 
                 N *= numprocs;
-                double E = total_sum / (N * numpart); 
+                double E = total_sum / (N * numpart);
                 double E_sq = total_sq / (N * numpart);
                 double variance = E_sq - E*E;
 
@@ -167,7 +165,7 @@ int main(int argc, char* argv[]) {
 #endif
 
                 elapsed_time += MPI_Wtime();
-                
+
                 // Print output data to file
                 if (myrank == 0) {
 
@@ -187,7 +185,7 @@ int main(int argc, char* argv[]) {
 
             } //End loop beta
         }//End loop alpha
-        
+
         MPI_Finalize();
         ofile.close();
 
