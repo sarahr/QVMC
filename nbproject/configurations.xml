@@ -62,6 +62,11 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
+          <ccTool>
+            <incDir>
+              <pElem>/usr/include/armadillo_bits</pElem>
+            </incDir>
+          </ccTool>
         </makeTool>
       </makefileType>
       <item path="Integration.cpp" ex="true" tool="1" flavor="0">

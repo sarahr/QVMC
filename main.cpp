@@ -11,13 +11,15 @@
 #include <fstream>
 #include "qvmc.h"
 #include "ini.h"
+#include <time.h>
 
 
 using namespace std;
 using namespace arma;
 
-#define DISTANCE false// set "true" if mean distance between two particles
+#define DISTANCE false // set "true" if mean distance between two particles
 // is to be computed
+#define E_POT_KIN true // set "true" for analyzing E_pot & E_kin separately
 
 
 /////////////////////////////////////////////////////////////////////////       
@@ -41,7 +43,7 @@ int main(int argc, char* argv[]) {
         //MPI initialization 
         int numprocs;
         int myrank;
-        MPI_Init(NULL, NULL);
+        MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
         MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
@@ -49,16 +51,18 @@ int main(int argc, char* argv[]) {
         int N, N_therm, N_delta; // MC cycles, Thermalization, Determine delta
         double alpha, beta; // Variational parameters
         double local_sum, local_squaresum;
+        double local_epot, local_sq_epot, local_ekin, local_sq_ekin;
         double local_r, local_rsq;
         double total_sum, total_sq;
+        double total_epot, total_sq_epot, total_ekin, total_sq_ekin;
         double total_r, total_rsq;
         int numpart, dim;
         double omega, step;
         double a_start, a_steps, a_delta, b_start, b_steps, b_delta;
         double elapsed_time;
 
-        long idum = -myrank - 1; // Seed for random number generator
-        int seed = myrank + 12;
+        long idum = -time(NULL) - myrank - 1; // Seed for random number generator
+        int seed = myrank + time(NULL);
         double del_max = 3.0; // Parameters to determine the optimal value
         double del_min = 0.01; // of delta
         double eps = .001; // Tolerance for delta
@@ -114,10 +118,6 @@ int main(int argc, char* argv[]) {
                 alpha = a_start + i*a_delta;
                 beta = b_start + j*b_delta;
 
-                //Initialize local variables
-                local_sum = 0;
-                local_squaresum = 0;
-
                 // Distribution of MC cycles to processors
                 N /= numprocs;
 
@@ -132,6 +132,13 @@ int main(int argc, char* argv[]) {
                     local_rsq = VMC_brute.get_rdistsq();
 #endif
 
+#if E_POT_KIN
+                    local_epot = VMC_brute.get_Epot();
+                    local_sq_epot = VMC_brute.get_Epotsq();
+                    local_ekin = VMC_brute.get_Ekin();
+                    local_sq_ekin = VMC_brute.get_Ekinsq();
+#endif
+
                 } else {
                     VMC_imp.set_delt(step);
                     VMC_imp.run_algo(N, N_therm, alpha, beta);
@@ -140,6 +147,12 @@ int main(int argc, char* argv[]) {
 #if DISTANCE
                     local_r = VMC_imp.get_rdist();
                     local_rsq = VMC_imp.get_rdistsq();
+#endif
+#if E_POT_KIN
+                    local_epot = VMC_imp.get_Epot();
+                    local_sq_epot = VMC_imp.get_Epotsq();
+                    local_ekin = VMC_imp.get_Ekin();
+                    local_sq_ekin = VMC_imp.get_Ekinsq();
 #endif
                 }
 
@@ -150,7 +163,14 @@ int main(int argc, char* argv[]) {
 #if DISTANCE               
                 MPI_Reduce(&local_r, &total_r, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
                 MPI_Reduce(&local_rsq, &total_rsq, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-#endif                
+#endif  
+
+#if E_POT_KIN
+                MPI_Reduce(&local_epot, &total_epot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+                MPI_Reduce(&local_sq_epot, &total_sq_epot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+                MPI_Reduce(&local_ekin, &total_ekin, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+                MPI_Reduce(&local_sq_ekin, &total_sq_ekin, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 
                 // Compute final values 
                 N *= numprocs;
@@ -164,6 +184,15 @@ int main(int argc, char* argv[]) {
                 total_rsq -= total_r*total_r;
 #endif
 
+#if E_POT_KIN
+                total_epot /= (N * numpart);
+                total_sq_epot /= (N * numpart);
+                total_sq_epot -= total_epot*total_epot;
+                total_ekin /= (N * numpart);
+                total_sq_ekin /= (N * numpart);
+                total_sq_ekin -= total_ekin*total_ekin;
+#endif
+
                 elapsed_time += MPI_Wtime();
 
                 // Print output data to file
@@ -174,7 +203,15 @@ int main(int argc, char* argv[]) {
                             << " " << variance << " " << total_r << " " << total_rsq << endl;
                     ofile << alpha << " " << beta << " " << setprecision(8) << E
                             << " " << variance << " " << total_r << " " << total_rsq << endl;
+#elif E_POT_KIN
+                    cout << alpha << " " << beta << " " << E << " " << variance
+                            << " " << total_epot << " " << total_sq_epot 
+                            << " " << total_ekin << " " << total_sq_ekin << endl;
+                    cout << alpha << " " << beta << " " << E << " " << variance
+                            << " " << total_epot << " " << total_sq_epot 
+                            << " " << total_ekin << " " << total_sq_ekin << endl;
 #else
+
                     cout << alpha << " " << beta << " " << setprecision(8) << E
                             << " " << variance << endl;
                     cout << "Elapsed time: " << elapsed_time << endl;

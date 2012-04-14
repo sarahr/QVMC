@@ -56,6 +56,26 @@ double Hamiltonian::H_1(Wavefunction* Psi) {
     return Int->getInteraction(Psi);
 }
 
+/**
+ * Compute kinetic part of the Hamiltonian
+ * @param Psi - pointer to wavefunction
+ * @param alpha - first variational parameter
+ * @param beta - second variational parameter
+ * @return  kinetic part of the Hamiltonian
+ */
+double Hamiltonian::H_kinetic(Wavefunction* Psi, double alpha, double beta) {
+    return Kin->Laplace(Psi, alpha, beta);
+}
+
+/**
+ * Compute potential part of Hamiltonian (interaction + external potential)
+ * @param Psi
+ * @return potential part of the  Hamiltonian 
+ */
+double Hamiltonian::H_potential(Wavefunction* Psi) {
+    return Int->getInteraction(Psi) + Pot->getPotential(Psi);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                              class HarmOs
