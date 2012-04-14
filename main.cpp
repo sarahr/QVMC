@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
                     cout << alpha << " " << beta << " " << E << " " << variance
                             << " " << total_epot << " " << total_sq_epot 
                             << " " << total_ekin << " " << total_sq_ekin << endl;
-                    cout << alpha << " " << beta << " " << E << " " << variance
+                    ofile << alpha << " " << beta << " " << E << " " << variance
                             << " " << total_epot << " " << total_sq_epot 
                             << " " << total_ekin << " " << total_sq_ekin << endl;
 #else
