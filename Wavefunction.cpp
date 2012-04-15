@@ -15,26 +15,22 @@
  * Constructor
  * @param numpart - number of particles
  * @param dim - dimension
- * @param SlaterPsi - pointer to object of Slater 
- * @param ExpFactorPsi - pointer to object of ExpFactor
- * @param JastrowPsi -  pointer to object of Jastrow function
- * @param Pos  - pointer to object of Radial, for current position
- * @param Pos_tr-  pointer to object of Radial, for trial position
+ * @param omega - oscillator frequency
  * @param jastrow - 0: without Jastrow factor, 1: with Jastrow factor
  */
-Wavefunction::Wavefunction(int numpart, int dim, Slater* SlaterPsi, ExpFactor*
-        ExpFactorPsi, Jastrow* JastrowPsi, Radial* Pos, Radial* Pos_tr, int jastrow) {
+Wavefunction::Wavefunction(int numpart, int dim, double omega, int jastrow) {
 
     this->dim = dim;
-    this->SlaterPsi = SlaterPsi;
-    this->ExpFactorPsi = ExpFactorPsi;
-    this->JastrowPsi = JastrowPsi;
     this->numpart = numpart;
-    this->Pos = Pos;
-    this->Pos_tr = Pos_tr;
 
     if (jastrow == 1) correl = true; // with or without correlation term
     else correl = false;
+
+    SlaterPsi = new Slater(numpart, omega, dim);
+    ExpFactorPsi = new ExpFactor(numpart, omega);
+    JastrowPsi = new Jastrow(numpart, dim);
+    Pos = new Radial(numpart, dim);
+    Pos_tr = new Radial(numpart, dim);
 
 }
 

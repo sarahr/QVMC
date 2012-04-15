@@ -19,7 +19,7 @@ using namespace arma;
 
 #define DISTANCE false // set "true" if mean distance between two particles
 // is to be computed
-#define E_POT_KIN true // set "true" for analyzing E_pot & E_kin separately
+#define E_POT_KIN false // set "true" for analyzing E_pot & E_kin separately
 
 
 /////////////////////////////////////////////////////////////////////////       
@@ -62,7 +62,6 @@ int main(int argc, char* argv[]) {
         double elapsed_time;
 
         long idum = -time(NULL) - myrank - 1; // Seed for random number generator
-        int seed = myrank + time(NULL);
         double del_max = 3.0; // Parameters to determine the optimal value
         double del_min = 0.01; // of delta
         double eps = .001; // Tolerance for delta
@@ -98,19 +97,10 @@ int main(int argc, char* argv[]) {
         elapsed_time = -MPI_Wtime();
 
         // Initializations
-        Slater Slat(numpart, omega, dim);
-        ExpFactor ExpFa(numpart, omega);
-        Jastrow Jast(numpart, dim);
-        Radial Pos(numpart, dim);
-        Radial Pos_tr(numpart, dim);
-        Kinetic Kin(code, dim, numpart, omega, interaction);
-        HarmOs HaOs(omega, numpart);
-        Interaction IntAct(numpart);
-        Wavefunction Trial(numpart, dim, &Slat, &ExpFa, &Jast, &Pos, &Pos_tr, jastrow);
-        Hamiltonian Hamilt1(numpart, dim, &Kin, &HaOs, &IntAct, interaction);
-        QForce QF(&Trial);
-        Metropolis VMC_brute(&Trial, &Hamilt1, idum);
-        Metropolis_Hastings VMC_imp(&Trial, &Hamilt1, seed, &QF, idum);
+        Wavefunction* Trial = new Wavefunction(numpart, dim, omega, jastrow);
+        Hamiltonian Hamilt(numpart, dim, interaction, code, omega);
+        Metropolis VMC_brute(Trial, &Hamilt, idum);
+        Metropolis_Hastings VMC_imp(Trial, &Hamilt, idum);
 
         for (int i = 0; i < a_steps; i++) { // Loop over alpha
             for (int j = 0; j < b_steps; j++) { // Loop over beta

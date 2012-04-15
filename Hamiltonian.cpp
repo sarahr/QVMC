@@ -9,27 +9,26 @@
     @date 11 April 2012
  */
 ////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Constructor
  * @param numpart - number of particles
  * @param dim -  dimension
- * @param Kin - pointer to an object of class Kinetic
- * @param Pot - pointer to an object of class Potential
- * @param Int - pointer to an object of class Interaction
  * @param intaction - 0: without interaction, 1: with interaction
+ * @param code - 0: analytical, 1: numerical expression for Laplacian
+ * @param omega - osc. frequency omega
  */
-Hamiltonian::Hamiltonian(int numpart, int dim, Kinetic* Kin, Potential* Pot,
-        Interaction* Int, int intaction) {
+Hamiltonian::Hamiltonian(int numpart, int dim, int intaction, int code, 
+        double omega) {
 
     this->numpart = numpart;
     this->dim = dim;
-    this->Kin = Kin;
-    this->Pot = Pot;
-    this->Int = Int;
 
     if (intaction == 1) interaction = true;
     else interaction = false;
+
+    Int = new Interaction(numpart);
+    Kin = new Kinetic(code, dim, numpart, omega, intaction);
+    Pot = new HarmOs(omega, numpart);
 
 }
 

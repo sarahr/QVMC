@@ -10,6 +10,7 @@
 #include <fstream>
 #include "qvmc.h"
 #include "ini.h"
+#include <time.h>
 
 
 using namespace std;
@@ -40,7 +41,6 @@ int main(int argc, char* argv[]) {
     double alpha, beta; // Variational parameters
     double local_sum, local_squaresum;
     long idum = -myrank - 1; // Seed for random number generator
-    int seed = myrank + 12;
     double del_max = 3.0; // Parameters to determine the optimal value
     double del_min = 0.01; // of delta
     double eps = .001; // Tolerance for delta
@@ -72,20 +72,10 @@ int main(int argc, char* argv[]) {
     jastrow = INIreader.GetInt("main", "jastrow");
 
     // Initializations
-    Slater Slat(numpart, omega, dim);
-    ExpFactor ExpFa(numpart, omega);
-    Jastrow Jast(numpart, dim);
-    Radial Pos(numpart, dim);
-    Radial Pos_tr(numpart, dim);
-    Kinetic Kin(code, dim, numpart, omega, interaction);
-    HarmOs HaOs(omega, numpart);
-    Interaction IntAct(numpart);
-    Wavefunction Trial(numpart, dim, &Slat, &ExpFa, &Jast, &Pos, &Pos_tr, jastrow);
-    Hamiltonian Hamilt1(numpart, dim, &Kin, &HaOs, &IntAct, interaction);
-    QForce QF(&Trial);
-    Metropolis VMC_brute(&Trial, &Hamilt1, idum);
-    Metropolis_Hastings VMC_imp(&Trial, &Hamilt1, seed, &QF, idum);
-
+    Wavefunction* Trial = new Wavefunction(numpart, dim, omega, jastrow);
+    Hamiltonian Hamilt(numpart, dim, interaction, code, omega);
+    Metropolis VMC_brute(Trial, &Hamilt, idum);
+    Metropolis_Hastings VMC_imp(Trial, &Hamilt, idum);
 
     // Distribution of MC cycles to processors
     N /= numprocs;

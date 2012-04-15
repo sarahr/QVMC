@@ -33,15 +33,10 @@ public:
      * Constructor
      * @param numpart - number of particles
      * @param dim - dimension
-     * @param SlaterPsi - pointer to object of Slater 
-     * @param ExpFactorPsi - pointer to object of ExpFactor
-     * @param JastrowPsi -  pointer to object of Jastrow function
-     * @param Pos  - pointer to object of Radial, for current position
-     * @param Pos_tr-  pointer to object of Radial, for trial position
+     * @param omega - oscillator frequency
      * @param jastrow - 0: without Jastrow factor, 1: with Jastrow factor
      */
-    Wavefunction(int numpart, int dim, Slater* SlaterPsi, ExpFactor* ExpFactorPsi,
-    Jastrow* JastrowPsi, Radial* Pos, Radial* Pos_tr, int jastrow);
+    Wavefunction(int numpart, int dim, double omega, int jastrow);
     
     /**
      * Compute value of the wavefunction

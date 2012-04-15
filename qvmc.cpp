@@ -15,8 +15,8 @@
 #include "ziggurat.hpp"
 #include "normal.hpp" 
 
-#define E_POT_KIN true // set "true" for analyzing E_pot & E_kin separately
-#define MINIMIZE false // set "true" for CGM
+#define E_POT_KIN false // set "true" for analyzing E_pot & E_kin separately
+#define MINIMIZE true // set "true" for CGM
 #define DISTANCE false // set "true" if mean distance between two particles
 // is to be computed
 
@@ -124,12 +124,12 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
                     not_accept(p); // Do not accept
 
             }
-            
+
             // Updating statistics 
 #if E_POT_KIN
             update_statistics(del_E, del_Epot, del_Ekin);
 #else
-            update_statistics(del_E); 
+            update_statistics(del_E);
 #endif
 
         }
@@ -179,6 +179,22 @@ void VMC::update_statistics(double del_E) {
     E += del_E;
     E_sq += del_E*del_E;
 
+#if MINIMIZE
+
+    exp_par_psi += par_psi;
+    exp_par_psi2 += del_E*par_psi;
+
+#elif DISTANCE
+
+    for (int j = 1; j < numpart; j++) {
+        for (int i = 0; i < j; i++) {
+            r_dist += Trial->Pos->r_int(i, j);
+            r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
+        }
+    }
+
+#endif  
+
     return;
 
 }
@@ -196,9 +212,25 @@ void VMC::update_statistics(double del_E, double del_Epot, double del_Ekin) {
     E_potsq += del_Epot*del_Epot;
     E_kin += del_Ekin;
     E_kinsq += del_Ekin*del_Ekin;
-    
+
+#if MINIMIZE
+
+    exp_par_psi += par_psi;
+    exp_par_psi2 += del_E*par_psi;
+
+#elif DISTANCE
+
+    for (int j = 1; j < numpart; j++) {
+        for (int i = 0; i < j; i++) {
+            r_dist += Trial->Pos->r_int(i, j);
+            r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
+        }
+    }
+
+#endif  
+
     return;
-    
+
 }
 
 /**
@@ -617,19 +649,18 @@ void Metropolis::delta_opt(int N_delta, double alpha, double beta, double del_mi
  * @param Trial - pointer to trial wavefunction
  * @param H - pointer to Hamiltonian for the local energy
  * @param seed - seed for normal random number generator
- * @param QFo - pointer to quantum force
  * @param idum - seed for uniform random number generator
  */
 Metropolis_Hastings::Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H,
-        int seed, QForce* QFo, long idum) {
+        long idum) {
 
     this->Trial = Trial;
     this->dim = Trial->get_dim();
     this->numpart = Trial->get_numpart();
     this->H = H;
-    this->QFo = QFo;
-    this->seed = seed;
     this->idum = idum;
+    
+    QFo = new QForce(Trial);
 
     R_cur.set_size(numpart, dim);
     R_tr.set_size(numpart, dim);
@@ -637,6 +668,7 @@ Metropolis_Hastings::Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H,
 
     interaction = Trial->get_int();
 
+    seed = (int) abs(idum);
     RanNormalSetSeedZigVec(&seed, 200); // Initialize random number generator
 
     exp_par_psi = zeros(2);

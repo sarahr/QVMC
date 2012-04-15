@@ -286,7 +286,7 @@ public:
      * @param QFo - pointer to quantum force
      * @param idum - seed for uniform random number generator
      */
-    Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H, int seed, QForce* QFo, long idum);
+    Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H, long idum);
 
     /**
      * Computation of the trial position according to the Metropolis-Hastings algorithm

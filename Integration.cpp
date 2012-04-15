@@ -97,17 +97,12 @@ int main(int argc, char* argv[]) {
     //Christoffer Hirth is supercool!!!
 
     // Creation of the necessary objects
-    Slater Slat(numpart, omega, dim);
-    ExpFactor ExpFa(numpart, omega);
-    Jastrow Jast(numpart, dim);
-    Radial Pos(numpart, dim);
-    Radial Pos_tr(numpart, dim);
-    Wavefunction Psi(numpart, dim, &Slat, &ExpFa, &Jast, &Pos, &Pos_tr, jastrow);
+    Wavefunction* Psi = new Wavefunction(numpart, dim, omega, jastrow);
 
     // Compute normalization integral
     mat null_m(0, 0);
     volume = pow(2 * lim, dim * numpart); // Integration volume for normalization
-    norm = One_body(&Psi, dim, -lim, lim, N_MC, alpha,
+    norm = One_body(Psi, dim, -lim, lim, N_MC, alpha,
             beta, idum, numpart, null_m);
     norm *= volume / N_MC;
 
@@ -125,7 +120,7 @@ int main(int argc, char* argv[]) {
 
             // Compute the integral
             total_int = 0.0;
-            integral = One_body(&Psi, dim, -lim, lim, N_local, alpha, beta,
+            integral = One_body(Psi, dim, -lim, lim, N_local, alpha, beta,
                     idum, numpart, coordinates);
 
             r = sqrt(x * x + y * y);
