@@ -103,8 +103,7 @@ int main(int argc, char* argv[]) {
     int N, N_therm, N_delta; // MC cycles, Thermalization, Determine delta
     double alpha, beta; // Variational parameters
     double local_sum, local_squaresum, local_r, local_rsq;
-    long idum = -myrank - 1; // Seed for random number generator
-    int seed = myrank + 12;
+    long idum = -time(NULL) -myrank - 1; // Seed for random number generator
     double del_max = 3.0; // Parameters to determine the optimal value
     double del_min = 0.01; // of delta
     double eps = .001; // Tolerance for delta
@@ -139,21 +138,11 @@ int main(int argc, char* argv[]) {
     jastrow = INIreader.GetInt("main", "jastrow");
 
     // Initializations
-    Slater Slat(numpart, omega, dim);
-    ExpFactor ExpFa(numpart, omega);
-    Jastrow Jast(numpart, dim);
-    Radial Pos(numpart, dim);
-    Radial Pos_tr(numpart, dim);
-    Kinetic Kin(code, dim, numpart, omega, interaction);
-    HarmOs HaOs(omega, numpart);
-    Interaction IntAct(numpart);
-    Wavefunction Trial(numpart, dim, &Slat, &ExpFa, &Jast, &Pos, &Pos_tr, jastrow);
-    Hamiltonian Hamilt1(numpart, dim, &Kin, &HaOs, &IntAct, interaction);
-    QForce QF(&Trial);
-    Metropolis VMC_brute(&Trial, &Hamilt1, idum);
-    Metropolis_Hastings VMC_imp(&Trial, &Hamilt1, seed, &QF, idum);
+    Wavefunction* Trial = new Wavefunction(numpart, dim, omega, jastrow);
+    Hamiltonian Hamilt(numpart, dim, interaction, code, omega);
+    Metropolis VMC_brute(Trial, &Hamilt, idum);
+    Metropolis_Hastings VMC_imp(Trial, &Hamilt, idum);
 
-    //////////////////////////////////////// myrank muss 0 sein oder so
     int nn, iter;
     double gtol, fret;
 
@@ -163,7 +152,7 @@ int main(int argc, char* argv[]) {
     vec p(nn);
 
     gtol = 1.0e-5;
-    //   now call dfmin and compute the minimum
+
     p(0) = a_start;
     p(1) = b_start;
     dfpmin(p, nn, gtol, &iter, &fret, E_func, delE_func, sampling, &VMC_brute,
@@ -248,6 +237,7 @@ vec delE_func(vec& total_par_psi, vec& total_par_psi2) {
     ret = 2 * total_par_psi2 - 2 * total_par_psi;
 
     return total_par_psi;
+    //return ret;
 }
 
 void dfpmin(vec &p, int n, double gtol, int *iter, double *fret, double(*func)
@@ -389,8 +379,8 @@ void lnsrch(int n, vec &xold, double fold, vec &g, vec &p, vec &x,
     alam = 1.0;
     for (;;) {
         for (i = 0; i < n; i++) x(i) = xold(i) + alam * p(i);
-        for (int i = 0; i < 2; i++) {
-            if (x(i) < 0) x(i) = start(i); // No negative alpha, beta !
+        for (int j = 0; j < 2; j++) {
+            if (x(j) < 0) x(j) = start(j); // No negative alpha, beta !
         }
 
         *f = (*func)(x, sampling, VMC_brute, VMC_imp, N, numprocs, myrank, del_min,
