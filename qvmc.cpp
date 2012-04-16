@@ -103,7 +103,8 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
 #endif
 
 #if MINIMIZE
-                part_psi(alpha, beta);
+                //part_psi(alpha, beta);
+                part_psi_beta_analytic(alpha, beta);
 #endif  
                 accepted++;
             } else { // otherwise check against random number
@@ -117,7 +118,8 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
 #endif
 
 #if MINIMIZE
-                    part_psi(alpha, beta);
+                    //part_psi(alpha, beta);
+                    part_psi_beta_analytic(alpha, beta);
 #endif   
                     accepted++;
                 } else
@@ -279,6 +281,45 @@ void VMC::part_psi(double alpha, double beta) {
 
     return;
 
+}
+
+/**
+ * Compute the derivative of the wavefunction with respect to alpha 
+ * numerically and with respect to beta analytically
+ * @param alpha - first variational parameter
+ * @param beta - second variational parameter
+ */
+void VMC::part_psi_beta_analytic(double alpha, double beta) {
+
+    double rij;
+    par_psi.zeros();
+    
+    // analytical derivative with respect to beta
+    for(int j = 0; j<numpart; j++){
+        for(int i = 0; i<j; i++){
+            rij = Trial->Pos->r_int(i,j);
+            par_psi(1) -= Trial->JastrowPsi->a(i,j)*rij*rij/
+                    ((1+beta*rij)*(1+beta*rij));
+        }
+    }
+    
+    // numerical derivative with respect to beta
+    double h = 0.005;
+    mat R = Trial->Pos->current;
+
+    double al_plus = Trial->value(R, alpha + h, beta);
+    double al_minus = Trial->value(R, alpha - h, beta);
+    
+    // Resets also internal values in objects
+    double wf_old = Trial->value(R, alpha, beta);
+
+    double deriv_alpha = (al_plus - al_minus) / (2 * h);
+    
+    par_psi(0) = deriv_alpha;
+    par_psi /= wf_old;
+    
+    return;
+    
 }
 
 /**

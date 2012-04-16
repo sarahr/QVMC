@@ -236,8 +236,8 @@ vec delE_func(vec& total_par_psi, vec& total_par_psi2) {
     vec ret(2);
     ret = 2 * total_par_psi2 - 2 * total_par_psi;
 
-    return total_par_psi;
-    //return ret;
+    //return total_par_psi;
+    return ret;
 }
 
 void dfpmin(vec &p, int n, double gtol, int *iter, double *fret, double(*func)

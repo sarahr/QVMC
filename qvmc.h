@@ -98,6 +98,14 @@ public:
     void part_psi(double alpha, double beta);
 
     /**
+     * Compute the derivative of the wavefunction with respect to alpha 
+     * numerically and with respect to beta analytically
+     * @param alpha - first variational parameter
+     * @param beta - second variational parameter
+     */
+    void part_psi_beta_analytic(double alpha, double beta);
+
+    /**
      * If the move is not accepted, reset position and Slater inverse
      * @param p - particle that has been moved
      */
