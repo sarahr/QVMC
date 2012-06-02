@@ -12,7 +12,6 @@
 #include "Hermite.h"
 #include "Jastrow.h"
 #include "Slater.h"
-#include "ExpFactor.h"
 #include "Wavefunction.h"
 #include "Hamiltonian.h"
 #include "QForce.h"
@@ -37,7 +36,7 @@ protected:
     double delta;
     double E, E_sq, E_kin, E_kinsq, E_pot, E_potsq;
     vec exp_par_psi, exp_par_psi2, par_psi;
-    double accepted;
+    int accepted;
     double r_dist, r_distsq;
 
     long idum;
@@ -50,13 +49,14 @@ public:
     };
 
     /**
-     * Constructor
+     * Main VMC algorithm
      * @param N - number of MC cycles
      * @param N_therm - number of thermalization steps
      * @param alpha - first variational parameter
      * @param beta - second variational parameter
+     * @param myrank - MPI rank
      */
-    void run_algo(int N, int N_therm, double alpha, double beta);
+    void run_algo(int N, int N_therm, double alpha, double beta, int myrank);
 
     /**
      * Compute the local energy
@@ -96,6 +96,14 @@ public:
      * @param beta - second variational parameter
      */
     void part_psi(double alpha, double beta);
+
+    /**
+     * Compute the derivative of the wavefunction with respect to the
+     * variational parameters analytically
+     * @param alpha - first variational parameter
+     * @param beta - second variational parameter
+     */
+    void part_psi_analytic(double alpha, double beta);
 
     /**
      * If the move is not accepted, reset position and Slater inverse

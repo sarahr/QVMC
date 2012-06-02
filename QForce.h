@@ -1,6 +1,6 @@
 /* 
  * File:   QForce.h
- * Author: sa_rei
+ * Author: sarahrei
  *
  * Created on April 9, 2012, 7:46 PM
  */
@@ -16,7 +16,7 @@ using namespace arma;
  
 /** @brief Class for the quantum force
     @author sarahrei
-    @date 11 April  2012
+    @date 15 May 2012
  */
 class QForce{
     
@@ -40,14 +40,16 @@ public:
      * @param Pos - pointer to object of class Radial with current position
      * @param alpha - first variational parameter
      * @param beta - second variational parameter
-     * @param test_inv - inverse of Slater determinant with trial position
+     * @param trial_inv - inverse of Slater determinant with trial position
      */
-    void new_qf(int p, mat& R, Radial* Pos, double alpha, double beta, mat& test_inv);
+    void new_qf(int p, mat& R, Radial* Pos, double alpha, double beta, mat& trial_inv);
     
     mat qf_old;
     mat qf_new;
     
+  
 };
+
 
 #endif	/* QFORCE_H */
 

@@ -212,6 +212,11 @@ public:
      * @return potential part of the  Hamiltonian 
      */
     double H_potential(Wavefunction* Psi);
+      
+    /**
+     * @return Whether or not interaction between the particles is considered
+     */
+    bool get_interaction() const;
 
 };
 

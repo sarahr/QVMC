@@ -27,7 +27,6 @@ Wavefunction::Wavefunction(int numpart, int dim, double omega, int jastrow) {
     else correl = false;
 
     SlaterPsi = new Slater(numpart, omega, dim);
-    ExpFactorPsi = new ExpFactor(numpart, omega);
     JastrowPsi = new Jastrow(numpart, dim);
     Pos = new Radial(numpart, dim);
     Pos_tr = new Radial(numpart, dim);
@@ -48,7 +47,7 @@ double Wavefunction::value(mat& R, double alpha, double beta) {
 
     // Get the different contributions
     cur_val *= SlaterPsi->value(R, alpha);
-    cur_val *= ExpFactorPsi->value(Pos_tr, alpha);
+   // cur_val *= ExpFactorPsi->value(Pos_tr, alpha);
 
     // Jastrow factor only if correlation
     if (correl) cur_val *= JastrowPsi->value(Pos_tr, beta);
@@ -72,7 +71,7 @@ double Wavefunction::ratio(mat& R_tr, int p, double alpha, double beta) {
     double r = 1.0;
 
     r *= SlaterPsi->ratio(R_tr, p, alpha);
-    r *= ExpFactorPsi->ratio(Pos, Pos_tr, alpha, p);
+   // r *= ExpFactorPsi->ratio(Pos, Pos_tr, alpha, p);
     if (correl) r *= JastrowPsi->ratio(Pos_tr, beta, p);
 
     SlaterPsi->update_inverse(p);
