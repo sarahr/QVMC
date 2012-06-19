@@ -25,8 +25,8 @@ using namespace arma;
  * is computed and stored in the vectors total_par_psi and total_par_psi2. 
  * These two vectors are then transferred to the function delE_func().
  */
-double E_func(vec x, int sampling, Metropolis* VMC_brute, Metropolis_Hastings* 
-VMC_imp, int N, int numprocs, int myrank, double del_min, double del_max, 
+double E_func(vec x, int sampling, Metropolis* VMC_brute, Metropolis_Hastings*
+        VMC_imp, int N, int numprocs, int myrank, double del_min, double del_max,
         double eps, double N_therm, double N_delta, double step, int numpart,
         vec& total_par_psi, vec& total_par_psi2);
 
@@ -43,7 +43,7 @@ void lnsrch(int n, vec &xold, double fold, vec &g, vec &p, vec &x,
         int myrank, double del_min, double del_max, double eps, double N_therm,
         double N_delta, double step, int numpart, vec& total_par_psi, vec&
         total_par_psi2), int sampling, Metropolis* VMC_brute, Metropolis_Hastings*
-        VMC_imp, int N, int numprocs, int myrank, double del_min, double del_max, 
+        VMC_imp, int N, int numprocs, int myrank, double del_min, double del_max,
         double eps, double N_therm, double N_delta, double step, int numpart,
         vec& total_par_psi, vec& total_par_psi2, vec start);
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     int N, N_therm, N_delta; // MC cycles, Thermalization, Determine delta
     double alpha, beta; // Variational parameters
     double local_sum, local_squaresum, local_r, local_rsq;
-    long idum = -time(NULL) -myrank - 1; // Seed for random number generator
+    long idum = -time(NULL) - myrank - 1; // Seed for random number generator
     double del_max = 3.0; // Parameters to determine the optimal value
     double del_min = 0.01; // of delta
     double eps = .001; // Tolerance for delta
@@ -156,18 +156,19 @@ int main(int argc, char* argv[]) {
     p(0) = a_start;
     p(1) = b_start;
     dfpmin(p, nn, gtol, &iter, &fret, E_func, delE_func, sampling, &VMC_brute,
-            &VMC_imp, N, numprocs, myrank, del_min, del_max, eps, N_therm, 
+            &VMC_imp, N, numprocs, myrank, del_min, del_max, eps, N_therm,
             N_delta, step, numpart, total_par_psi, total_par_psi2);
-    
+
     if (myrank == 0) {
         cout << "Value of energy minimum = " << fret << endl;
         cout << "Number of iterations = " << iter << endl;
         cout << "Value of alpha at minimum = " << p(0) << endl;
         cout << "Value of beta at minimum = " << p(1) << endl;
+
+        ofile.close();
     }
 
     MPI_Finalize();
-    ofile.close();
 
 
 
@@ -298,9 +299,9 @@ void dfpmin(vec &p, int n, double gtol, int *iter, double *fret, double(*func)
             return;
         }
         for (i = 0; i < n; i++) dg(i) = g(i);
- 
+
         dum = (*func)(p, sampling, VMC_brute, VMC_imp, N, numprocs, myrank,
-                del_min, del_max, eps, N_therm, N_delta, step, numpart, 
+                del_min, del_max, eps, N_therm, N_delta, step, numpart,
                 total_par_psi, total_par_psi2);
 
         g = (*dfunc)(total_par_psi, total_par_psi2);
@@ -356,7 +357,7 @@ void lnsrch(int n, vec &xold, double fold, vec &g, vec &p, vec &x,
         VMC_imp, int N, int numprocs, int myrank, double del_min, double del_max,
         double eps, double N_therm, double N_delta, double step, int numpart,
         vec& total_par_psi, vec& total_par_psi2, vec start) {
-    
+
     int i;
     double a, alam, alam2, alamin, b, disc, f2, fold2, rhs1, rhs2, slope, sum, temp,
             test, tmplam;
@@ -385,7 +386,7 @@ void lnsrch(int n, vec &xold, double fold, vec &g, vec &p, vec &x,
         *f = (*func)(x, sampling, VMC_brute, VMC_imp, N, numprocs, myrank, del_min,
                 del_max, eps, N_therm, N_delta, step, numpart, total_par_psi_test,
                 total_par_psi2_test);
-        
+
         if (alam < alamin) {
             for (i = 0; i < n; i++) x(i) = xold(i);
             *check = 1;

@@ -7,10 +7,13 @@
 
 
 #define E_POT_KIN false // set "true" for analyzing E_pot & E_kin separately
-#define MINIMIZE false // set "true" for CGM
+#define MINIMIZE true // set "true" for CGM
 #define DISTANCE false // set "true" if mean distance between two particles
 // is to be computed
-#define DENSITY true // set "true" to store positions
+#define DENSITY false // set "true" to store positions
+#define PAIRCOR false // set "true" for pair correlation function
+#define POSITION false // set "true" for track of movement
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             class VMC
@@ -43,6 +46,18 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta, int myrank) {
     ost << "density" << myrank << ".dat";
     ofile2.open(ost.str().c_str(), ios::out);
 #endif
+#if PAIRCOR
+    ofstream ofile4;
+    ostringstream ost;
+    ost << "paircorVMC" << myrank << ".dat";
+    ofile4.open(ost.str().c_str(), ios::out);
+#endif  
+#if POSITION
+    ofstream ofile5;
+    ostringstream ost;
+    ost << "position" << myrank << ".dat";
+    ofile5.open(ost.str().c_str(), ios::out);
+#endif
 
 
     //*************************  Thermalization  ******************************
@@ -50,6 +65,7 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta, int myrank) {
     accepted = 0;
 
     initialize(alpha, beta); // Initialize the system
+
 
     for (i = 0; i < N_therm; i++) {
 
@@ -143,6 +159,27 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta, int myrank) {
             ofile2 << 1.0 << endl; // weight "1" for walker in VMC
         }
 #endif
+#if PAIRCOR
+        if ((i % 500) == 0) {
+            for (int h = 1; h < numpart; h++) {
+                for (int m = 0; m < h; m++) {
+                    ofile4 << Trial->Pos->r_int(m, h) << " ";
+                }
+            }
+
+            ofile4 << 1 << endl;
+        }
+
+#endif
+#if POSITION
+        if ((i % 500) == 0)
+            for (int part = 0; part < numpart; part++) {
+                for (int m = 0; m < dim; m++) {
+                    ofile5 << Trial->Pos->current(part, m) << " ";
+                }
+                ofile5 << endl;
+            }
+#endif
 
     }
 
@@ -151,6 +188,13 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta, int myrank) {
 #if DENSITY
     ofile2.close();
 #endif
+#if PAIRCOR
+    ofile4.close();
+#endif
+#if POSITION
+    ofile5.close();
+#endif
+
 
     return;
 
@@ -207,8 +251,7 @@ void VMC::update_statistics(double del_E) {
             r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
         }
     }
-
-#endif  
+#endif
 
     return;
 
@@ -241,8 +284,7 @@ void VMC::update_statistics(double del_E, double del_Epot, double del_Ekin) {
             r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
         }
     }
-
-#endif  
+#endif
 
     return;
 
@@ -674,6 +716,14 @@ void Metropolis::delta_opt(int N_delta, double alpha, double beta, double del_mi
     delta = (del_max + del_min) / 2.;
 
     return;
+}
+
+double Metropolis::get_delta() const {
+    return delta;
+}
+
+void Metropolis::set_delta(double delta) {
+    this->delta = delta;
 }
 
 
