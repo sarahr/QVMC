@@ -38,6 +38,8 @@ void QForce::new_qf(int p, mat& R, Radial* Pos, double alpha, double beta,
         mat& test_inv) {
 
     int n2 = numpart / 2;
+    
+    /*
     int access = p / n2; // to access right spin
 
 
@@ -49,7 +51,21 @@ void QForce::new_qf(int p, mat& R, Radial* Pos, double alpha, double beta,
             qf_new(p, i) *= 2;
         }
     }
+    
+    */
+  
+  
 
+        for (int pp = 0; pp < numpart; pp++) {
+            for (int i = 0; i < dim; i++) {
+
+                qf_new(pp, i) = (Psi->SlaterPsi->gradient(R, pp, alpha, test_inv))(i);
+                if (interaction) qf_new(pp, i) += (Psi->JastrowPsi->gradient(Pos, pp, beta))(i);
+                qf_new(pp, i) *= 2;
+            }
+        }
+
+        
     return;
 
 }

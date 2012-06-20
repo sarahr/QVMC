@@ -8,8 +8,8 @@
 #ifndef WAVEFUNCTION_H
 #define	WAVEFUNCTION_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -25,10 +25,10 @@ private:
     int dim;
     int numpart; 
     double cur_val;
-    bool correl;
            
 public:
     
+    bool correl;
     /**
      * Constructor
      * @param numpart - number of particles
@@ -82,7 +82,6 @@ public:
     int get_numpart() const;
     
     Slater* SlaterPsi;
-    ExpFactor* ExpFactorPsi;
     Jastrow* JastrowPsi;
     Radial* Pos, *Pos_tr;
    

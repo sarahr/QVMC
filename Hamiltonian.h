@@ -8,8 +8,8 @@
 #ifndef HAMILTONIAN_H
 #define	HAMILTONIAN_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -212,6 +212,11 @@ public:
      * @return potential part of the  Hamiltonian 
      */
     double H_potential(Wavefunction* Psi);
+      
+    /**
+     * @return Whether or not interaction between the particles is considered
+     */
+    bool get_interaction() const;
 
 };
 

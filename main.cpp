@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
                 //Run the MC algorithm
                 if (sampling == 0) {
                     VMC_brute.delta_opt(N_delta, alpha, beta, del_min, del_max, eps);
-                    VMC_brute.run_algo(N, N_therm, alpha, beta);
+                    VMC_brute.run_algo(N, N_therm, alpha, beta, myrank);
                     local_sum = VMC_brute.get_E();
                     local_squaresum = VMC_brute.get_Esq();
 #if DISTANCE
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 
                 } else {
                     VMC_imp.set_delt(step);
-                    VMC_imp.run_algo(N, N_therm, alpha, beta);
+                    VMC_imp.run_algo(N, N_therm, alpha, beta, myrank);
                     local_sum = VMC_imp.get_E();
                     local_squaresum = VMC_imp.get_Esq();
 #if DISTANCE

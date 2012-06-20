@@ -8,8 +8,8 @@
 #ifndef QFORCE_H
 #define	QFORCE_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -47,7 +47,9 @@ public:
     mat qf_old;
     mat qf_new;
     
+  
 };
+
 
 #endif	/* QFORCE_H */
 

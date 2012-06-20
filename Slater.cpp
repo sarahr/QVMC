@@ -28,6 +28,7 @@ Slater::Slater(int numpart, double omega, int dim) {
     // Initialization, setting size of vectors/matrices
     slater = zeros(n2, numpart);
     slat_inv = ones(n2, numpart);
+    sd_dalpha = zeros(n2, numpart);
     inv_back = zeros(n2, numpart);
     detv = zeros(2); // spin up/spin down determinant
     grad = zeros(dim);
@@ -49,6 +50,15 @@ const Slater::fptr Slater::herm_table[] = {
     &Hermite::H_0, &Hermite::H_1, &Hermite::H_2
 };
 
+
+/*
+ * Array of functions containing the derivatives of the Hermite polynomials,
+ * needed for the derivatives of the single-particle functions w.r.t. alpha
+ */
+const Slater::fptr Slater::deriv_table[] = {
+    &Hermite::H_0_deriv, &Hermite::H_1_deriv, &Hermite::H_2_deriv
+};
+
 /**
  * Compute the value of the Slater determinant
  * @param R - matrix containing the Cartesian coordinates of all particles
@@ -65,12 +75,12 @@ double Slater::value(mat& R, double alpha) {
             // Spin up
             slater(i, p) = (BasSin->*herm_table[part_code(i, 0)])
                     (sqal * sqom * R(p, 0))*(BasSin->*herm_table[part_code(i, 1)])
-                    (sqal * sqom * R(p, 1));
+                    (sqal * sqom * R(p, 1))*exp(-0.5*alpha*omega*(R(p,0)*R(p,0)+R(p,1)*R(p,1))); // Optimization !
 
             // Spin down
             slater(i, p + n2) = (BasSin->*herm_table[part_code(i, 0)])
                     (sqal * sqom * R(p + n2, 0))*(BasSin->*herm_table[part_code(i, 1)])
-                    (sqal * sqom * R(p + n2, 1));
+                    (sqal * sqom * R(p + n2, 1))*exp(-0.5*alpha*omega*(R(p+n2,0)*R(p+n2,0)+R(p+n2,1)*R(p+n2,1))); // Optimization!
         }
     }
 
@@ -126,7 +136,7 @@ vec Slater::orb_grad(mat& R, int p, int qq, double alpha) {
     }
 
     gra_ob *= (BasSin->*herm_table[part_code(qq, 0)])(sqal * sqom * R(p, 0))*
-            (BasSin->*herm_table[part_code(qq, 1)])(sqal * sqom * R(p, 1));
+            (BasSin->*herm_table[part_code(qq, 1)])(sqal * sqom * R(p, 1))*exp(-0.5*alpha*omega*(R(p,0)*R(p,0)+R(p,1)*R(p,1)));
 
     return gra_ob;
 
@@ -187,7 +197,7 @@ double Slater::orb_laplace(Radial* Pos, int p, int qq, double alpha) {
     l *= alpha*omega;
 
     l *= (BasSin->*herm_table[part_code(qq, 0)])(sqal * sqom * Pos->current(p, 0))
-            *(BasSin->*herm_table[part_code(qq, 1)])(sqal * sqom * Pos->current(p, 1));
+            *(BasSin->*herm_table[part_code(qq, 1)])(sqal * sqom * Pos->current(p, 1))*exp(-0.5*alpha*omega*(Pos->r(p)));
 
     return l;
 
@@ -207,8 +217,10 @@ mat Slater::inverse(int p, mat& R, double alpha) {
     mat test_inv = ones(n2, numpart);
     value(R, alpha);
 
-    test_inv.submat(0, access*n2, n2 - 1, n2 - 1 + access * n2) = inv(slater.submat(0, access*n2, n2 - 1, n2 - 1 + access * n2));
-
+    //test_inv.submat(0, access*n2, n2 - 1, n2 - 1 + access * n2) = inv(slater.submat(0, access*n2, n2 - 1, n2 - 1 + access * n2));
+    test_inv.submat(0, 0, n2 - 1, n2 - 1) = inv(slater.submat(0, 0, n2 - 1, n2 - 1));
+    test_inv.submat(0, n2, n2 - 1, numpart-1) = inv(slater.submat(0, n2, n2 - 1, numpart-1));
+    
     return test_inv;
 
 }
@@ -281,7 +293,7 @@ double Slater::ratio(mat& R_new, int p, double alpha) {
 
     for (int j = 0; j < n2; j++) {
         sinp_new(j) = (BasSin->*herm_table[part_code(j, 0)])(sqal * sqom * R_new(p, 0))
-                *(BasSin->*herm_table[part_code(j, 1)])(sqal * sqom * R_new(p, 1));
+                *(BasSin->*herm_table[part_code(j, 1)])(sqal * sqom * R_new(p, 1))*exp(-0.5*alpha*omega*(R_new(p,0)*R_new(p,0)+R_new(p,1)*R_new(p,1)));
     }
 
     for (int j = 0; j < n2; j++) {
@@ -290,6 +302,60 @@ double Slater::ratio(mat& R_new, int p, double alpha) {
 
     return cur_rat;
 
+}
+
+/**
+ * Computes the derivative of the single-particle orbitals with respect to
+ * alpha, needed by the function deriv_alpha()
+ * Note: derivative includes exponential factor!
+ * @param R - matrix containing the Cartesian coordinates of all particles
+ * @param Pos - instance of "Radial" with current position
+ * @param alpha - variational parameter
+ * @param q - determines single-particle orbital
+ * @param p - particle that supplies coordinates
+ * @return derivative with respect to alpha
+ */
+double Slater::orb_deriv_alpha(mat& R, Radial* Pos, double alpha, int q, int p) {
+
+    double ret;
+    double sqal = sqrt(alpha);
+
+    ret = (BasSin->*deriv_table[part_code(q, 0)])(sqal * sqom * R(p, 0)) *
+            sqom / sqal * R(p, 0)*(BasSin->*herm_table[part_code(q, 1)])
+            (sqal * sqom * R(p, 1));
+    ret += (BasSin->*deriv_table[part_code(q, 1)])(sqal * sqom * R(p, 1)) *
+            sqom / sqal * R(p, 1)*(BasSin->*herm_table[part_code(q, 0)])
+            (sqal * sqom * R(p, 0));
+    ret -= (BasSin->*herm_table[part_code(q, 0)])(sqal * sqom * R(p, 0))*
+            (BasSin->*herm_table[part_code(q, 1)])(sqal * sqom * R(p, 1)) *
+            omega * Pos->r(p);
+    ret *= 0.5*exp(-0.5*alpha*omega*Pos->r(p));
+
+    return ret;
+}
+
+/**
+ * Computes the derivative of the entire Slater determinant w.r.t. alpha
+ * @param R - matrix containing the Cartesian coordinates of all particles
+ * @param Pos - instance of "Radial" with current position
+ * @param alpha - variational parameter
+ * @return derivative with respect to alpha
+ */
+double Slater::deriv_alpha(mat& R, Radial* Pos, double alpha) {
+
+    double deriv = 0.0;
+
+    for (int p = 0; p < n2; p++) { // Loop over all particles
+        for (int i = 0; i < n2; i++) { // Loop over all single-particle states
+            
+            sd_dalpha(i, p) = orb_deriv_alpha(R, Pos, alpha, i, p) * slat_inv(i, p);
+            sd_dalpha(i, p + n2) = orb_deriv_alpha(R, Pos, alpha, i, p + n2) *
+                    slat_inv(i, p + n2);
+            deriv += sd_dalpha(i,p) + sd_dalpha(i,p+n2);
+        }
+    }
+
+    return deriv;
 }
 
 /**

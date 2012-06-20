@@ -7,7 +7,8 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 #include "lib.h"
 #include "qvmc.h"
 

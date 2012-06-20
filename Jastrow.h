@@ -8,8 +8,8 @@
 #ifndef JASTROW_H
 #define	JASTROW_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -20,11 +20,11 @@ using namespace arma;
  */
 class Jastrow{
 private:
-    int numpart, dim;
-    mat a; 
+    int numpart, dim; 
     vec grad;
    
 public:
+    mat a;
     mat g_ij; 
     vec g_new;
     Jastrow(){};

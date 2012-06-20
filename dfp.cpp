@@ -216,7 +216,7 @@ double E_func(vec x, int sampling, Metropolis* VMC_brute, Metropolis_Hastings*
     for (int k = 0; k < 2; k++) {
         MPI_Allreduce(&local_par_psi(k), &total_par_psi(k), 1, MPI_DOUBLE,
                 MPI_SUM, MPI_COMM_WORLD);
-        MPI_Allreduce(&local_par_psi(k), &total_par_psi(k), 1, MPI_DOUBLE,
+        MPI_Allreduce(&local_par_psi2(k), &total_par_psi2(k), 1, MPI_DOUBLE,
                 MPI_SUM, MPI_COMM_WORLD);
     }
 
@@ -236,8 +236,7 @@ vec delE_func(vec& total_par_psi, vec& total_par_psi2) {
     vec ret(2);
     ret = 2 * total_par_psi2 - 2 * total_par_psi;
 
-    return total_par_psi;
-    //return ret;
+    return ret;
 }
 
 void dfpmin(vec &p, int n, double gtol, int *iter, double *fret, double(*func)

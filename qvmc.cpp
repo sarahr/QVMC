@@ -1,25 +1,18 @@
-/*
- * Performance of the QVMC algorithm. All the contributions to the local energy
- * are written to file for further analysis by the program blocking_analyze.
- * 
- * Input arguments: 
- * argv[1]: # processors used when executing blocking.cpp
- * argv[2]: # MC cycles
- */
-
 
 #include "qvmc.h"
 #include "lib.h"  
 #include "zignor.h" 
 #include "zigrandom.h"
 #include "ziggurat.hpp"
-#include "normal.hpp" 
+
 
 #define E_POT_KIN false // set "true" for analyzing E_pot & E_kin separately
-#define MINIMIZE true // set "true" for CGM
+#define MINIMIZE false // set "true" for CGM
 #define DISTANCE false // set "true" if mean distance between two particles
 // is to be computed
-
+#define DENSITY false // set "true" to store positions
+#define PAIRCOR false // set "true" for pair correlation function
+#define POSITION true // set "true" for track of movement
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,14 +30,34 @@
  * @param N_therm - number of thermalization steps
  * @param alpha - first variational parameter
  * @param beta - second variational parameter
+ * @param myrank - MPI rank
  */
-void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
+void VMC::run_algo(int N, int N_therm, double alpha, double beta, int myrank) {
 
     int i;
     double rat, eps;
     double del_E = 0;
     double del_Epot = 0;
     double del_Ekin = 0;
+
+#if DENSITY
+    ofstream ofile2;
+    ostringstream ost;
+    ost << "density" << myrank << ".dat";
+    ofile2.open(ost.str().c_str(), ios::out);
+#endif
+#if PAIRCOR
+    ofstream ofile4;
+    ostringstream ost;
+    ost << "paircorVMC" << myrank << ".dat";
+    ofile4.open(ost.str().c_str(), ios::out);
+#endif  
+#if POSITION
+    ofstream ofile5;
+    ostringstream ost;
+    ost << "/home/scratch/sarahrei/position" << myrank << ".dat";
+    ofile5.open(ost.str().c_str(), ios::out);
+#endif
 
 
     //*************************  Thermalization  ******************************
@@ -103,7 +116,8 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
 #endif
 
 #if MINIMIZE
-                part_psi(alpha, beta);
+                // part_psi(alpha, beta);
+                part_psi_analytic(alpha, beta);
 #endif  
                 accepted++;
             } else { // otherwise check against random number
@@ -117,7 +131,8 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
 #endif
 
 #if MINIMIZE
-                    part_psi(alpha, beta);
+                    //part_psi(alpha, beta);
+                    part_psi_analytic(alpha, beta);
 #endif   
                     accepted++;
                 } else
@@ -133,9 +148,52 @@ void VMC::run_algo(int N, int N_therm, double alpha, double beta) {
 #endif
 
         }
+
+#if DENSITY
+        if (i % 500 == 0) {
+            for (int l = 0; l < numpart; l++) {
+                ofile2 << sqrt(Trial->Pos->r(l)) << " ";
+            }
+
+            ofile2 << 1.0 << endl; // weight "1" for walker in VMC
+        }
+#endif
+#if PAIRCOR
+                if ((i % 500) == 0) {
+                   for (int h = 1; h < numpart; h++) {
+                       for(int m = 0; m < h; m++){
+                            ofile4 << Trial->Pos->r_int(m,h) << " ";
+                       }
+                    }
+                    
+                    ofile4 << 1 << endl;
+                }
+             
+#endif
+#if POSITION
+        if ((i%100)==0)
+            for (int part = 0; part < numpart; part++) {
+                for (int m = 0; m < dim; m++) {
+                    ofile5 << Trial->Pos->current(part, m) << " ";
+                }
+                ofile5 << endl;
+            }
+#endif
+
     }
 
     //cout << accepted/(N*numpart) << endl;
+
+#if DENSITY
+    ofile2.close();
+#endif
+    #if PAIRCOR
+    ofile4.close();
+#endif
+#if POSITION
+       ofile5.close();
+#endif
+    
 
     return;
 
@@ -192,8 +250,7 @@ void VMC::update_statistics(double del_E) {
             r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
         }
     }
-
-#endif  
+#endif
 
     return;
 
@@ -226,8 +283,7 @@ void VMC::update_statistics(double del_E, double del_Epot, double del_Ekin) {
             r_distsq += Trial->Pos->r_int(i, j) * Trial->Pos->r_int(i, j);
         }
     }
-
-#endif  
+#endif
 
     return;
 
@@ -276,6 +332,34 @@ void VMC::part_psi(double alpha, double beta) {
     par_psi(1) = deriv_beta;
 
     par_psi /= wf_old;
+
+    return;
+
+}
+
+/**
+ * Compute the derivative of the wavefunction with respect to the 
+ * variational parameters analytically
+ * @param alpha - first variational parameter
+ * @param beta - second variational parameter
+ */
+void VMC::part_psi_analytic(double alpha, double beta) {
+
+    double rij;
+    par_psi.zeros();
+
+    // analytical derivative with respect to beta
+    for (int j = 0; j < numpart; j++) {
+        for (int i = 0; i < j; i++) {
+            rij = Trial->Pos->r_int(i, j);
+            par_psi(1) -= Trial->JastrowPsi->a(i, j) * rij * rij /
+                    ((1 + beta * rij)*(1 + beta * rij));
+        }
+    }
+
+    // analytical derivative with respect to alpha
+    mat R = Trial->Pos->current;
+    par_psi(0) = Trial->SlaterPsi->deriv_alpha(R, Trial->Pos, alpha);
 
     return;
 
@@ -611,11 +695,11 @@ void Metropolis::delta_opt(int N_delta, double alpha, double beta, double del_mi
     while ((del_max - del_min) > eps) {
 
         delta = del_min;
-        run_algo(0, N_delta, alpha, beta);
+        run_algo(0, N_delta, alpha, beta, 999);
         accept_min = (accepted * 1.0) / (N_delta * numpart);
 
         delta = (del_max + del_min) / 2.;
-        run_algo(0, N_delta, alpha, beta);
+        run_algo(0, N_delta, alpha, beta, 999);
 
         accept_mid = (accepted * 1.0) / (N_delta * numpart);
 
@@ -647,7 +731,7 @@ void Metropolis::delta_opt(int N_delta, double alpha, double beta, double del_mi
 /**
  * Constructor
  * @param Trial - pointer to trial wavefunction
- * @param H - pointer to Hamiltonian for the local energy
+ * @param H - Hamiltonian of the system
  * @param seed - seed for normal random number generator
  * @param idum - seed for uniform random number generator
  */
@@ -659,7 +743,7 @@ Metropolis_Hastings::Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H,
     this->numpart = Trial->get_numpart();
     this->H = H;
     this->idum = idum;
-    
+
     QFo = new QForce(Trial);
 
     R_cur.set_size(numpart, dim);
@@ -682,7 +766,6 @@ Metropolis_Hastings::Metropolis_Hastings(Wavefunction* Trial, Hamiltonian* H,
  * @param p - particle that has been moved 
  * @param alpha - first variational parameter
  * @param beta - second variational parameter
- * @return 
  */
 void Metropolis_Hastings::trial_pos(int p, double alpha, double beta) {
 
@@ -697,26 +780,6 @@ void Metropolis_Hastings::trial_pos(int p, double alpha, double beta) {
     }
 
     Trial->Pos_tr->update_p(p, R_tr);
-    test_inv = Trial->SlaterPsi->inverse(p, R_tr, alpha);
-
-    // New quantum force
-    QFo->new_qf(p, R_tr, Trial->Pos_tr, alpha, beta, test_inv);
-
-    // In case of divergencies, take brute force step
-    if (QFo->qf_new.max() > 100 || QFo->qf_new.min() < -100)
-        bruteforce_tour = true;
-
-    if (bruteforce_tour) {
-
-        for (int j = 0; j < dim; j++) {
-            chi = DRanNormalZigVec();
-            R_tr(p, j) = R_cur(p, j) + delta * (2 * ran3(&idum) - 1);
-        }
-
-        Trial->Pos_tr->update_p(p, R_tr);
-        test_inv = Trial->SlaterPsi->inverse(p, R_tr, alpha);
-        QFo->new_qf(p, R_tr, Trial->Pos_tr, alpha, beta, test_inv);
-    }
 
     return;
 
@@ -730,24 +793,76 @@ void Metropolis_Hastings::trial_pos(int p, double alpha, double beta) {
  * @return 
  */
 double Metropolis_Hastings::ratio(int p, double alpha, double beta) {
+    /*
+     double r, ef;
+     vec ef1(dim), ef2(dim);
 
-    double r, ef;
+     r = Trial->ratio(R_tr, p, alpha, beta);
+     r *= r;
+
+     if (bruteforce_tour) return r;
+
+     for (int k = 0; k < dim; k++) {
+         ef1(k) = QFo->qf_old(p, k) + QFo->qf_new(p, k);
+         ef2(k) = (QFo->qf_old(p, k) - QFo->qf_new(p, k))*0.25 * del_t;
+         ef2(k) += R_cur(p, k) - R_tr(p, k);
+     }
+
+     ef = 0.5 * dot(ef1, ef2);
+     ef = exp(ef);
+     r *= ef;
+
+     return r;
+     */
+
+
+    double r, green = 0.0;
     vec ef1(dim), ef2(dim);
 
     r = Trial->ratio(R_tr, p, alpha, beta);
     r *= r;
 
-    if (bruteforce_tour) return r;
 
+    //if (bruteforce_tour) return r;
+    QFo->new_qf(p, R_tr, Trial->Pos_tr, alpha, beta, Trial->SlaterPsi->slat_inv);
+
+    /*
     for (int k = 0; k < dim; k++) {
         ef1(k) = QFo->qf_old(p, k) + QFo->qf_new(p, k);
         ef2(k) = (QFo->qf_old(p, k) - QFo->qf_new(p, k))*0.25 * del_t;
         ef2(k) += R_cur(p, k) - R_tr(p, k);
     }
 
-    ef = 0.5 * dot(ef1, ef2);
-    ef = exp(ef);
-    r *= ef;
+    green = 0.5 * dot(ef1, ef2);
+    green = exp(green);
+    r *= green;
+    
+    return r;
+    cout << green << " ";*/
+
+    //green = 0.0;
+    for (int i = 0; i < numpart; i++) {
+        for (int k = 0; k < dim; k++) {
+
+            if (i != p) {
+                green += 0.25 * del_t * 0.5 *
+                        (QFo->qf_old(i, k) + QFo->qf_new(i, k)) *
+                        (QFo->qf_old(i, k) - QFo->qf_new(i, k));
+            } else {
+
+                green += 0.5 * (QFo->qf_old(i, k) + QFo->qf_new(i, k)) *
+                        (0.5 * 0.5 * del_t * (QFo->qf_old(i, k) - QFo->qf_new(i, k)) +
+                        R_cur(i, k) - R_tr(i, k));
+            }
+
+
+        }
+    }
+
+
+    green = exp(green);
+    // cout << green << endl;
+    r *= green;
 
     return r;
 
@@ -810,9 +925,10 @@ void Metropolis_Hastings::accept(int p, double alpha, double beta) {
 
     for (int k = 0; k < dim; k++) {
         R_cur(p, k) = R_tr(p, k); // Update position
-        QFo->qf_old(p, k) = QFo->qf_new(p, k);
+        //QFo->qf_old(p, k) = QFo->qf_new(p, k);
     }
 
+    QFo->qf_old = QFo->qf_new;
 
     Trial->Pos->update_p(p, R_cur);
 

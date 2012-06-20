@@ -8,8 +8,8 @@
 #ifndef HERMITE_H
 #define	HERMITE_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -43,6 +43,27 @@ public:
      * @return value at x
      */
     double H_2(double x);
+    
+    /**
+     * Derivative of the first Hermite polynomial
+     * @param x
+     * @return derivative with respect to x
+     */
+    double H_0_deriv(double x);
+    
+    /**
+     * Derivative of the second Hermite polynomial
+     * @param x
+     * @return derivative with respect to x
+     */
+    double H_1_deriv(double x);
+    
+    /**
+     * Derivative of the third Hermite polynomial
+     * @param x
+     * @return derivative with respect to x
+     */
+    double H_2_deriv(double x);
 };
 
 

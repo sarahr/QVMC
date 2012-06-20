@@ -8,8 +8,8 @@
 #ifndef SLATER_H
 #define	SLATER_H
 
-#include <armadillo> 
-//#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -25,19 +25,21 @@ private:
     int numpart; 
     int dim;
     double omega, sqom, cur_rat; 
-    mat  inv_back;
+    mat  sd_dalpha;
     vec detv, grad, sinp_new;
     int n2;
 
     // Definitions for the orbital array
     typedef double (Hermite::*fptr)(double); 
     static const fptr herm_table[3];
+    static const fptr deriv_table[3];
 
     Hermite* BasSin;
     imat part_code; // code for the single-particle basis (up to N=12 particles)
+  
      
 public:
-    mat slater, slat_inv;
+    mat slater, slat_inv, inv_back;
     Slater(){};
     
     /**
@@ -91,7 +93,7 @@ public:
     /**
      * Compute the Laplacian of the Slater determinant with respect to particle "p"
      * Note: Laplacian is of complete SD, including exponential factor!
-     * @param Pos - pointer to object of class Radial with current position
+     * @param Pos - instance of "Radial" with current position
      * @param p - particle that has been moved, supplies coordinates
      * @param alpha - variational parameter
      * @return Laplacian of the Slater determinant with respect to particle "p"
@@ -101,7 +103,7 @@ public:
     /**
      * Computes the Laplacian of the single-particle orbitals, needed by the 
      * function laplace()
-     * @param Pos - pointer to object of class Radial with current position
+     * @param Pos - instance of "Radial" with current position
      * @param p - particle that has been moved, supplies coordinates
      * @param q - determines single-particle orbital
      * @param alpha - variational parameter
@@ -125,6 +127,28 @@ public:
      * @return Slater inverse 
      */
     mat inverse(int p, mat& R, double alpha);
+    
+    /**
+     * Computes the derivative of the single-particle orbitals with respect to
+     * alpha, needed by the function deriv_alpha()
+     * Note: derivative includes exponential factor!
+     * @param R - matrix containing the Cartesian coordinates of all particles
+     * @param Pos - instance of "Radial" with current position
+     * @param alpha - variational parameter
+     * @param q - determines single-particle orbital
+     * @param p - particle that supplies coordinates
+     * @return derivative with respect to alpha
+     */
+    double orb_deriv_alpha(mat& R, Radial* Pos, double alpha, int q, int p);
+    
+    /**
+     * Computes the derivative of the entire Slater determinant w.r.t. alpha
+     * @param R - matrix containing the Cartesian coordinates of all particles
+     * @param Pos - instance of "Radial" with current position
+     * @param alpha - variational parameter
+     * @return derivative with respect to alpha
+     */
+    double deriv_alpha(mat& R, Radial* Pos, double alpha);
     
     /**
      * Resets the Slater inverse in case the move has been rejected

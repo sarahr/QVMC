@@ -29,7 +29,6 @@ Hamiltonian::Hamiltonian(int numpart, int dim, int intaction, int code,
     Int = new Interaction(numpart);
     Kin = new Kinetic(code, dim, numpart, omega, intaction);
     Pot = new HarmOs(omega, numpart);
-
 }
 
 /**
@@ -75,6 +74,13 @@ double Hamiltonian::H_potential(Wavefunction* Psi) {
     return Int->getInteraction(Psi) + Pot->getPotential(Psi);
 }
 
+
+/**
+ * @return Whether or not interaction between the particles is considered
+ */
+bool Hamiltonian::get_interaction() const {
+    return interaction;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //                              class HarmOs

@@ -1,100 +1,119 @@
-# First line: university account, second line: home laptop
+LFLAGS= -larmadillo -lblas -llapack
+LFLAGS_UNI = -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
+CFLAGS_UNI =-O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/
+CFLAGS =-O3
+CC=mpicxx -DMPICH_IGNORE_CXX_SEEK
+DEBUG=-Wall -g
 
-all: main
-#all: dfp	
-#all: blocking_analyze
-#all: blocking
-#all: Integration
+all: main dfp main_DMC blocking_analyze blocking Integration density
 
-main: main.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o  QForce.o  ExpFactor.o zigrandom.o zignor.o ziggurat.o ini.o
-	#mpicxx -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
-	mpicxx -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o -larmadillo -lblas -llapack
+main_DMC: main_DMC.o Walker.o DMC.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o  QForce.o  ControlWalkers.o zigrandom.o zignor.o ziggurat.o ini.o normal.o
+	$(CC) -o main_DMC main_DMC.o  DMC.o Walker.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ControlWalkers.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o normal.o $(LFLAGS_UNI) 
 
-dfp: dfp.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o  zigrandom.o zignor.o ziggurat.o  ini.o 
-	#mpicxx -o dfp dfp.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o  -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
-	mpicxx -o dfp dfp.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o  -larmadillo -lblas -llapack
+
+main: main.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o  QForce.o  zigrandom.o zignor.o ziggurat.o ini.o
+	$(CC) -o main main.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o $(LFLAGS_UNI)
+
+dfp: dfp.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o  zigrandom.o zignor.o ziggurat.o  ini.o 
+	$(CC) -o dfp dfp.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o  ini.o  $(LFLAGS_UNI)
 	
 blocking_analyze: blocking_analyze.o
-	g++ -o blocking_analyze blocking_analyze.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
+	$(CC) -o blocking_analyze blocking_analyze.o $(LFLAGS_UNI)
 
-blocking: blocking.o qvmc.o lib.o Hamiltonian.o Wavefunction.o Radial.o Hermite.o Slater.o Jastrow.o ExpFactor.o QForce.o  zigrandom.o zignor.o ziggurat.o ini.o
-	#mpicxx -o blocking blocking.o  qvmc.o Hamiltonian.o Radial.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o  QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
-	mpicxx -o blocking blocking.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o  QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o -larmadillo -lblas -llapack
+blocking: blocking.o qvmc.o lib.o Hamiltonian.o Wavefunction.o Radial.o Hermite.o Slater.o Jastrow.o QForce.o  zigrandom.o zignor.o ziggurat.o ini.o
+	$(CC) -o blocking blocking.o  qvmc.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o $(LFLAGS_UNI)
+
+density: density.o
+	$(CC) -o density density.o $(LFLAGS_UNI)
+
+paircorDMC: paircorDMC.o
+	$(CC) -o paircorDMC paircorDMC.o $(LFLAGS_UNI)
 	
-Integration: Integration.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o  zigrandom.o zignor.o ziggurat.o ini.o
-	mpicxx -o Integration Integration.o  qvmc.o Hermite.o Radial.o Hamiltonian.o Wavefunction.o Slater.o Jastrow.o ExpFactor.o QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o -L/mn/felt/u9/sarahrei/General/Libraries/usr/include/ -lblas -llapack
+hist3d: hist3d.o
+	$(CC) -o hist3d hist3d.o $(LFLAGS_UNI)
+	
+Integration: Integration.o qvmc.o lib.o Hamiltonian.o Radial.o Hermite.o Wavefunction.o Slater.o Jastrow.o QForce.o  zigrandom.o zignor.o ziggurat.o ini.o
+	$(CC) -o Integration Integration.o  qvmc.o Hermite.o Radial.o Hamiltonian.o Wavefunction.o Slater.o Jastrow.o  QForce.o lib.o zigrandom.o zignor.o ziggurat.o ini.o $(LFLAGS_UNI)
 
-main.o: main.cpp 
-#	mpicxx -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ main.cpp	
-	mpicxx -c  -Wall -O3  main.cpp 
+main.o: main.cpp 	
+	$(CC) -c  $(CFLAGS_UNI)  main.cpp 
+	
+main_DMC.o: main_DMC.cpp 	
+	$(CC) -c  $(CFLAGS_UNI) main_DMC.cpp 
 
-blocking.o: blocking.cpp 
-#	mpicxx -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ blocking.cpp	
-	mpicxx -c  -Wall -O3  blocking.cpp  
+blocking.o: blocking.cpp 	
+	$(CC) -c $(CFLAGS_UNI)  blocking.cpp  
+	
+hist3d.o: hist3d.cpp 	
+	$(CC) -c $(CFLAGS_UNI)  hist3d.cpp  
 
 blocking_analyze.o: blocking_analyze.cpp
-	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ blocking_analyze.cpp
+	$(CC) -c $(CFLAGS_UNI) blocking_analyze.cpp
 
-Integration.o: Integration.cpp 
-#	mpicxx -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Integration.cpp	
-	mpicxx -c  -Wall -O3  Integration.cpp 
+density.o: density.cpp
+	$(CC) -c $(CFLAGS_UNI) density.cpp
 
+paircorDMC.o: paircorDMC.cpp
+	$(CC) -c $(CFLAGS_UNI) paircorDMC.cpp
 
-dfp.o: dfp.cpp 
-#	mpicxx -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ dfp.cpp	
-	mpicxx -c  -Wall -O3  dfp.cpp     
+Integration.o: Integration.cpp 	
+	$(CC) -c $(CFLAGS_UNI)  Integration.cpp 
+
+dfp.o: dfp.cpp 	
+	$(CC) -c $(CFLAGS_UNI)  dfp.cpp     
 	  
-qvmc.o: qvmc.cpp	 
-#	g++ -c  -Wall -O3 qvmc.cpp -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/	
-	g++ -c  -Wall -O3 qvmc.cpp 
+qvmc.o: qvmc.cpp	
+	$(CC) -c $(CFLAGS_UNI) qvmc.cpp 
 	
 Hermite.o: Hermite.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Hermite.cpp
-	g++ -c  -Wall -O3  Hermite.cpp 	
+	$(CC) -c $(CFLAGS_UNI) Hermite.cpp 	
 	
 Radial.o: Radial.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Radial.cpp
-	g++ -c  -Wall -O3  Radial.cpp 		
+	$(CC) -c $(CFLAGS_UNI) Radial.cpp 		
 	
 Hamiltonian.o: Hamiltonian.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Hamiltonian.cpp
-	g++ -c  -Wall -O3  Hamiltonian.cpp  
+	$(CC) -c $(CFLAGS_UNI) Hamiltonian.cpp  
 	
 Wavefunction.o: Wavefunction.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Wavefunction.cpp
-	g++ -c  -Wall -O3  Wavefunction.cpp  
+	$(CC) -c $(CFLAGS_UNI) Wavefunction.cpp  
  
 Slater.o: Slater.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Slater.cpp
-	g++ -c  -Wall -O3  Slater.cpp 
+	$(CC) -c $(CFLAGS_UNI) Slater.cpp 
 
 Jastrow.o: Jastrow.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ Jastrow.cpp
-	g++ -c  -Wall -O3  Jastrow.cpp
-	
-ExpFactor.o: ExpFactor.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ ExpFactor.cpp
-	g++ -c  -Wall -O3  ExpFactor.cpp
- 	
+	$(CC) -c $(CFLAGS_UNI) Jastrow.cpp
+		
 QForce.o: QForce.cpp
-#	g++ -c  -Wall -O3 -I/mn/felt/u9/sarahrei/General/Libraries/usr/include/ QForce.cpp
-	g++ -c  -Wall -O3  QForce.cpp 
+	$(CC) -c $(CFLAGS_UNI) QForce.cpp 
+	
+Walker.o: Walker.cpp
+	$(CC) -c $(CFLAGS_UNI) Walker.cpp 
+	
+DMC.o: DMC.cpp
+	$(CC) -c $(CFLAGS_UNI) DMC.cpp 
+	
+ControlWalkers.o: ControlWalkers.cpp
+	$(CC) -c $(CFLAGS_UNI) ControlWalkers.cpp 	
+	
 
 lib.o: lib.cpp
-	g++ -c -Wall -O3 lib.cpp
+	$(CC) -c $(CFLAGS_UNI) lib.cpp
 	
 zignor.o: zignor.c
-	g++ -c -Wall -O3 zignor.c
+	$(CC) -c $(CFLAGS_UNI) zignor.c
 	
 zigrandom.o: zigrandom.c
-	g++ -c -Wall -O3 zigrandom.c
+	$(CC) -c $(CFLAGS_UNI) zigrandom.c
 	
 ziggurat.o: ziggurat.cpp
-	g++ -c -Wall -O3 ziggurat.cpp
+	$(CC) -c $(CFLAGS_UNI) ziggurat.cpp
 	
 ini.o: ini.cpp
-	g++ -c -Wall ini.cpp
+	$(CC) -c $(CFLAGS_UNI) ini.cpp
+	
+normal.o: normal.cpp
+	$(CC) -c $(CFLAGS_UNI) normal.cpp
 		
 clean:
-	rm -rf *o main Integration blocking blocking_analyze dfp
+	rm -rf *o main dfp main_DMC blocking_analyze blocking Integration *~
  

@@ -8,7 +8,8 @@
 
 #include <cstdlib>
 #include <sys/stat.h>
-#include <armadillo>
+//#include <armadillo> 
+#include</mn/felt/u9/sarahrei/General/Libraries/usr/include/armadillo>
 
 using namespace std;
 using namespace arma;
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
 
     // Variables to be adjusted
     int min_blocksize = 2;
-    int max_blocksize = 5000;
+    int max_blocksize = 10000;
     int block_samples = 200;
     int block_size;
 

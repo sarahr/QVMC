@@ -2,8 +2,10 @@
 <configurationDescriptor version="80">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="QVMC2" root=".">
-      <in>ExpFactor.cpp</in>
-      <in>ExpFactor.h</in>
+      <in>ControlWalkers.cpp</in>
+      <in>ControlWalkers.h</in>
+      <in>DMC.cpp</in>
+      <in>DMC.h</in>
       <in>Hamiltonian.cpp</in>
       <in>Hamiltonian.h</in>
       <in>Hermite.cpp</in>
@@ -17,18 +19,23 @@
       <in>Radial.h</in>
       <in>Slater.cpp</in>
       <in>Slater.h</in>
+      <in>Walker.cpp</in>
+      <in>Walker.h</in>
       <in>Wavefunction.cpp</in>
       <in>Wavefunction.h</in>
       <in>blocking.cpp</in>
       <in>blocking_analyze.cpp</in>
+      <in>density.cpp</in>
       <in>dfp.cpp</in>
       <in>ini.cpp</in>
       <in>ini.h</in>
       <in>lib.cpp</in>
       <in>lib.h</in>
       <in>main.cpp</in>
+      <in>main_DMC.cpp</in>
       <in>normal.cpp</in>
       <in>normal.hpp</in>
+      <in>paircorDMC.cpp</in>
       <in>qvmc.cpp</in>
       <in>qvmc.h</in>
       <in>ziggurat.cpp</in>
@@ -61,15 +68,52 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
-          <ccTool>
-            <incDir>
-              <pElem>/usr/include/armadillo_bits</pElem>
-            </incDir>
-          </ccTool>
+          <executablePath>dfp</executablePath>
         </makeTool>
       </makefileType>
+      <item path="Hamiltonian.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="Hermite.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
       <item path="Integration.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="Jastrow.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="QForce.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="Radial.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="Wavefunction.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="blocking.cpp" ex="true" tool="1" flavor="0">
       </item>
@@ -77,14 +121,43 @@
       </item>
       <item path="dfp.cpp" ex="true" tool="1" flavor="0">
       </item>
+      <item path="ini.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="lib.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor="0">
         <ccTool>
           <incDir>
             <pElem>/usr/include/mpich2</pElem>
+            <pElem>/usr/include/armadillo_bits</pElem>
           </incDir>
         </ccTool>
       </item>
       <item path="normal.cpp" ex="true" tool="1" flavor="0">
+      </item>
+      <item path="qvmc.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="ziggurat.cpp" ex="false" tool="1" flavor="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/armadillo_bits</pElem>
+          </incDir>
+        </ccTool>
       </item>
     </conf>
   </confs>
